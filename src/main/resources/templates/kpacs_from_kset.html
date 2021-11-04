@@ -1,0 +1,75 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Getting Started: Serving Web Content</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <script type="text/javascript" src="/codebase/suite.js"></script>
+    <link rel="stylesheet" href="/codebase/suite.css">
+</head>
+<body>
+
+<!--<p th:text="'Hello, ' + ${name} + '!'" />-->
+
+<p th:text="'SetID: ' + ${id} + '.' + '  SetTitle: ' + ${name}"></p>
+
+<div style="height:500px; width:1000px" id="grid_container"></div>
+
+
+<script>
+
+const grid = new dhx.Grid("grid_container", {
+  columns: [
+    { width: 100, id: "id", header: [{ text: "Kpac ID", }] },
+<!--    { width: 150, id: "title", header: [{ text: "Title" }] },-->
+<!--    { width: 250, id: "description", header: [{ text: "Description" }] },-->
+<!--    { width: 100, id: "creationDate", header: [{ text: "Created" }] },-->
+<!--    { width: 60, id: "deleteButton", header: [{ text: "Delete" }], htmlEnable: true, sortable: false}-->
+  ]
+});
+
+grid.events.on("CellDblClick", function(row,column,e){
+    console.log(row.id);
+    console.log(column);
+    console.log(e);
+<!--    window.location.assign("ksets/row.id");-->
+    window.location.assign("/");
+});
+
+grid.events.on("CellClick", function(row,column,e){
+    console.log(column);
+    console.log(row);
+    if (column.id == 'deleteButton') {
+        console.log('deleted!');
+        deletePost(row.id);
+    }
+});
+
+function deletePost(id) {
+        dhx.ajax.delete("http://localhost:8080/kpacs/delete/" + id).then(function () {
+        console.log("deleted!");
+        console.log(id);
+        grid.hideRow(id);
+    }).catch(function (err) {
+        console.log("Deletion failed: " + err.status + " " + err.statusText);
+    });
+}
+
+var id = [[${id}]];
+
+const lazyDataProxy = new dhx.LazyDataProxy("http://localhost:8080/ksets/ksetsdata/" + id, {
+  from: 0,
+  limit: 30,
+  prepare: 5,
+  delay: 150
+});
+
+grid.data.load(lazyDataProxy);
+
+
+
+</script>
+
+<!--<a href="/ksets">/ksets</a>-->
+
+</body>
+</html>
